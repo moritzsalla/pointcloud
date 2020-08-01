@@ -29,7 +29,7 @@ boolean ANIMATION = false;
 void setup () {
   size(900, 900, P3D);
   frameRate(60);
-  img = loadImage("img2.png");
+  img = loadImage("env1.jpg");
   img.resize(900, 0);
   noSmooth();
   pixelDensity(2);
@@ -77,7 +77,7 @@ void draw() {
       push();
       translate(x * tileSize - width/2, y * tileSize - height/2, z);
 
-      if (b < THRESH_MAX && b > THRESH_MIN) point(0, 0);
+      if (b < THRESH_MIN && b > THRESH_MAX) point(0, 0);
       pop();
     }
   }
