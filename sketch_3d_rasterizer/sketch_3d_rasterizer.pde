@@ -3,6 +3,9 @@ import controlP5.*;
 ControlP5 cp5;
 PImage img;
 
+// Constants
+static float COLOR_A = 255;
+static float COLOR_B = 0;
 static float POSITION_X;
 static float POSITION_Y;
 static float POSITION_Z;
@@ -10,12 +13,13 @@ static float NUMBER_TILES;
 static float BRIGHTNESS_THRESHOLD_MIN;
 static float BRIGHTNESS_THRESHOLD_MAX;
 static float ROTATION_SPEED;
-static float COLOR_A = 255;
-static float COLOR_B = 0;
+
+// Configuration
+final static int DEPTH_RANGE = 100;
 
 final static boolean GREYSCALE = true;
 final static boolean INVERT_BACKGROUND = false;
-final static boolean SAVE_OUTPUT = true;
+final static boolean SAVE_OUTPUT = false;
 
 String OUTPUT_DIRECTORY = "output/######.png";
 
@@ -32,15 +36,7 @@ void setup () {
 }
 
 void draw() {
-  if (INVERT_BACKGROUND) {
-    background(COLOR_B);
-    fill(COLOR_A);
-    stroke(COLOR_A);
-  } else {
-    background(COLOR_A);
-    fill(COLOR_B);
-    stroke(COLOR_B);
-  }
+  setDrawingSettings();
 
   push();
 
@@ -51,18 +47,7 @@ void draw() {
 
   for (int x = 0; x <= NUMBER_TILES; x++) {
     for (int y = 0; y <= NUMBER_TILES; y++) {
-      color c = img.get(int(x * tileSize), int(y * tileSize));
-      float b = map(brightness(c), 0, 255, 0, 1);
-      float z = map(b, 0, 1, -100, 100);
-
-      push();
-
-      translate(x * tileSize - width/2, y * tileSize - height/2, z);
-
-      if (!GREYSCALE) stroke(c); // Colorize points
-      if (b < BRIGHTNESS_THRESHOLD_MIN && b > BRIGHTNESS_THRESHOLD_MAX) point(0, 0);
-
-      pop();
+      drawTile(x, y, tileSize);
     }
   }
 
@@ -73,8 +58,19 @@ void draw() {
   if (SAVE_OUTPUT) saveFrame(OUTPUT_DIRECTORY);
 }
 
+private void setDrawingSettings() {
+  if (INVERT_BACKGROUND) {
+    background(COLOR_B);
+    fill(COLOR_A);
+    stroke(COLOR_A);
+  } else {
+    background(COLOR_A);
+    fill(COLOR_B);
+    stroke(COLOR_B);
+  }
+}
 
-void displayControls () {
+private void displayControls () {
   cp5 = new ControlP5(this);
 
   cp5.addSlider("NUMBER_TILES").setRange(100, 600).setNumberOfTickMarks(10).setValue(200);
@@ -94,20 +90,46 @@ void displayControls () {
   cp5.getController("POSITION_Z").getCaptionLabel().align(ControlP5.TOP, ControlP5.TOP_OUTSIDE).setPaddingX(0);
 }
 
-void drawControlsBackground () {
+private void drawTile(int x, int y, float tileSize) {
+  // Get pixel brightness..
+  color c = img.get(int(x * tileSize), int(y * tileSize));
+  // Normalize it
+  float b = map(brightness(c), 0, 255, 0, 1);
+  // Map it to our depth range
+  float z = map(b, 0, 1, -DEPTH_RANGE, DEPTH_RANGE);
+
+  push();
+
+  // Translate our point (that we are yet to draw)
+  translate(x * tileSize - width / 2, y * tileSize - height / 2, z);
+
+  // Colorize point if config is set
+  if (!GREYSCALE) {
+    stroke(c);
+  }
+
+  boolean withinBounds =b < BRIGHTNESS_THRESHOLD_MIN && b > BRIGHTNESS_THRESHOLD_MAX;
+  if (withinBounds) {
+    point(0, 0);
+  }
+
+  pop();
+}
+
+private void drawControlsBackground () {
   push();
   fill(COLOR_B);
   rect(0, 0, width, 65);
   pop();
 }
 
-void centerCanvas () {
+private void centerCanvas () {
   float centeredX = width/2 + POSITION_X;
   float centeredY = height/2 + POSITION_Y;
   translate(centeredX, centeredY, POSITION_Z);
 }
 
-void rotateCanvas () {
+private void rotateCanvas () {
   rotateX(180);
   rotateZ(radians(frameCount * ROTATION_SPEED));
 }
