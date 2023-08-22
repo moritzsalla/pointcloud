@@ -15,7 +15,7 @@ static float BRIGHTNESS_THRESHOLD_MAX;
 static float ROTATION_SPEED;
 
 // Configuration
-final static int DEPTH_RANGE = 100;
+final static int DEPTH_RANGE = 120;
 
 final static boolean GREYSCALE = true;
 final static boolean INVERT_BACKGROUND = false;
